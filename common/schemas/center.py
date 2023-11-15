@@ -42,6 +42,7 @@ class PadDrink(BaseModel):
     reference_id: Optional[str] = ''
     receipt_number: str
     name: str
+    type: str
     discount: define.SUPPORT_DISCOUNT_STATUS = define.DiscountStatus.no
     refund: define.SUPPORT_REFUND_STATUS = define.RefundStatus.no
     option: dict

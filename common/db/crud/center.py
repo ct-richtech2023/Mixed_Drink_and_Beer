@@ -43,6 +43,7 @@ def create_paid_order_from_pad(db: Session, order: center_schema.PadOrder):
             'receipt_number': drink.receipt_number,
             'task_uuid': task_uuid,
             'formula': formula,
+            'type': drink.type,
             'cup': format_option(drink.option.get('cup', 'Med')),
             'sweetness': int(drink.option.get('sweetness', 100)),
             'ice': format_option(drink.option.get('ice', 'light')),

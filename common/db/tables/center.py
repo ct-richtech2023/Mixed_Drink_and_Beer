@@ -45,6 +45,7 @@ class Task(Base):
     reference_id = Column(String, default='', comment='reference_id from online order')
     task_uuid = Column(UUID(as_uuid=True), primary_key=True, unique=True, comment='calc unique task uuid')
     formula = Column(String, comment='formula')
+    type = Column(String, comment='type of drink; cold/hot/red/white')
     cup = Column(String, comment='cup name')
     sweetness = Column(Integer, comment='sweetness percent like 80, 100')
     ice = Column(String, comment='no_ice/light/more')

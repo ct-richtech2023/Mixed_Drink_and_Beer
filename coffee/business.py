@@ -20,6 +20,10 @@ from common.schemas import total as total_schema
 coffee_table_name = coffee_table.Coffee.__tablename__
 
 
+# 创建一个锁，用于确保两个线程不会同时访问数据库
+thread_lock = threading.Lock()
+
+
 def get_coffee_obj():
     # 确保coffee对象只创建一次
     if not Business.Instance:
@@ -28,7 +32,7 @@ def get_coffee_obj():
 
 
 class MakeThread(threading.Thread):
-    def __init__(self, db: Session, desc):
+    def __init__(self, db: Session, desc, type):
         super().__init__()
         logger.info('start make coffee thread, desc={}'.format(desc))
         self._current_task_uuid = ''
@@ -39,7 +43,10 @@ class MakeThread(threading.Thread):
         self.db_session = db
         self.cold_drink = []
         self.hot_drink = []
+        self.red_wine = []
+        self.white_wine = []
         self.init_drink_type()
+        self.type = type
 
     def pause(self):
         self._pause = True
@@ -60,13 +67,21 @@ class MakeThread(threading.Thread):
         formula_objs = coffee_crud.get_formula(db=self.db_session, cup='Medium Cup', in_use=1)
         cold_list = []
         hot_list = []
+        red_list = []
+        white_list = []
         for formula_obj in formula_objs:
             if formula_obj.type == 'cold':
                 cold_list.append(formula_obj.name)
             elif formula_obj.type == 'hot':
                 hot_list.append(formula_obj.name)
+            elif formula_obj.type == 'red':
+                red_list.append(formula_obj.name)
+            elif formula_obj.type == 'white':
+                white_list.append(formula_obj.name)
         self.cold_drink = cold_list
         self.hot_drink = hot_list
+        self.red_wine = red_list
+        self.white_wine = white_list
 
     def make_coffee_by_type(self, record: coffee_schema.CoffeeRecord):
         AudioInterface.gtts(
@@ -84,6 +99,12 @@ class MakeThread(threading.Thread):
             elif record.formula in self.hot_drink:
                 logger.info('formula={}, make_hot_drink'.format(record.formula))
                 AdamInterface.make_hot_drink(record.formula, record.sweetness, record.ice, record.milk, record.receipt_number)
+            elif record.formula in self.red_wine:
+                logger.info('formula={}, make_red_wine'.format(record.formula))
+                AdamInterface.make_red_wine(record.formula, record.sweetness, record.ice, record.milk, record.receipt_number)
+            elif record.formula in self.white_wine:
+                logger.info('formula={}, make_white_wine'.format(record.formula))
+                AdamInterface.make_white_wine(record.formula, record.sweetness, record.ice, record.milk, record.receipt_number)
             else:
                 raise Exception('not support formula:{}'.format(record.formula))
 
@@ -107,7 +128,8 @@ class MakeThread(threading.Thread):
         start_time = time.perf_counter()
         idle_time = 0
         while self._run_flag:
-            while coffee_record := coffee_crud.get_one_waiting_record(self.db_session):
+            # logger.debug("Execution thread")
+            while coffee_record := coffee_crud.get_one_waiting_record_by_type(self.db_session,type=self.type):
                 if not self._run_flag:  # 急停时，run_flag为False，退出线程
                     break
                 if not new_flag:
@@ -174,7 +196,8 @@ class MakeThread(threading.Thread):
                     use_time = int(time.perf_counter() - start_time)
                     logger.info('normal exist! no record in table={}, use_time={}'.format(coffee_table_name, use_time))
                     try:
-                        AdamInterface.standby_pose()
+                        if coffee_crud.get_one_processing_record(self.db_session):
+                            AdamInterface.standby_pose()
                     except Exception:
                         pass
                     idle_time = time.time()
@@ -201,7 +224,8 @@ class Business:
         self.init_db_from_sql()
         # coffee_crud.init_service(self.db_session)  # 删除原来的排队信息
 
-        self.make_coffee_thread: MakeThread = None  # noqa
+        self.make_coffee_thread1: MakeThread = None  # noqa
+        self.make_coffee_thread2: MakeThread = None  # noqa
         self.machine_config = total_schema.MachineConfig(**conf.get_machine_config())
 
         self.start_make_coffee_thread('start service')
@@ -240,17 +264,29 @@ class Business:
         return result
 
     def start_make_coffee_thread(self, desc):
-        def start_thread():
-            self.make_coffee_thread = MakeThread(db=self.db_session, desc=desc)
-            self.make_coffee_thread.setDaemon(True)
-            self.make_coffee_thread.start()
+        def start_thread1():
+            self.make_coffee_thread1 = MakeThread(db=self.db_session, desc=desc, type="red")
+            self.make_coffee_thread1.setDaemon(True)
+            self.make_coffee_thread1.start()
 
-        if self.make_coffee_thread is None:
-            start_thread()
-            logger.info('first start make milk tea thread')
-        elif self.make_coffee_thread and not self.make_coffee_thread.is_alive():
-            start_thread()
-            logger.info('restart start make milk tea thread')
+        def start_thread2():
+            self.make_coffee_thread2 = MakeThread(db=self.db_session, desc=desc, type="white")
+            self.make_coffee_thread2.setDaemon(True)
+            self.make_coffee_thread2.start()
+
+        if self.make_coffee_thread1 is None:
+            start_thread1()
+            logger.info('first start make milk wine thread1')
+        elif self.make_coffee_thread1 and not self.make_coffee_thread1.is_alive():
+            start_thread1()
+            logger.info('restart start make milk wine thread1')
+
+        if self.make_coffee_thread2 is None:
+            start_thread2()
+            logger.info('first start make milk wine thread2')
+        elif self.make_coffee_thread2 and not self.make_coffee_thread2.is_alive():
+            start_thread2()
+            logger.info('restart start make milk wine thread2')
 
     def init_db_from_sql(self):
         coffee_crud.init_data(self.db_session, '../common/db/init.sql')

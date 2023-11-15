@@ -2,10 +2,10 @@
 cup_env: indoor
 
 adam:
-  sn: abcdefg
+  sn: abcdef
   ip:
-    left: 192.168.0.232
-    right: 192.168.0.231
+    left: 192.168.2.226
+    right: 192.168.2.240
   default_speed:
     arm: 400
     gripper: 15000
@@ -99,7 +99,7 @@ put: # the place where put cup
       z: 210 #185
   - name: cold_cup
     pose:
-      x: 800 #800
+      x: 690 #800
       y: -350
       z: 185 #175 #165 #150
 

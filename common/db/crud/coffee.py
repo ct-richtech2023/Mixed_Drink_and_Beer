@@ -37,10 +37,52 @@ def get_one_waiting_record(db: Session, task_uuid=None) -> coffee_schema.CoffeeR
                 coffee_table.Coffee.id.asc()).first():
             return coffee_schema.CoffeeRecord.from_orm(record)
     else:
-        if record := db.query(coffee_table.Coffee).filter(
-                coffee_table.Coffee.status == TaskStatus.waiting).order_by(coffee_table.Coffee.create_time.asc(),
-                                                                           coffee_table.Coffee.id.asc()).first():
+        if record := db.query(coffee_table.Coffee).filter(coffee_table.Coffee.status == TaskStatus.waiting).order_by(
+                coffee_table.Coffee.create_time.asc(), coffee_table.Coffee.id.asc()).first():
             return coffee_schema.CoffeeRecord.from_orm(record)
+
+
+def get_one_waiting_record_by_type(db: Session, type=None):
+    if type == Constant.FormulaType.white:
+        if white_record := db.query(coffee_table.Coffee).filter(coffee_table.Coffee.status == TaskStatus.waiting,
+                                                                coffee_table.Coffee.type == type).order_by(
+            coffee_table.Coffee.create_time.asc(), coffee_table.Coffee.id.asc()).first():
+            return coffee_schema.CoffeeRecord.from_orm(white_record)
+    elif type == Constant.FormulaType.red:
+        if red_record := db.query(coffee_table.Coffee).filter(coffee_table.Coffee.status == TaskStatus.waiting,
+                                                              coffee_table.Coffee.type == type).order_by(
+            coffee_table.Coffee.create_time.asc(), coffee_table.Coffee.id.asc()).first():
+            return coffee_schema.CoffeeRecord.from_orm(red_record)
+    # if processing_records := db.query(coffee_table.Coffee).filter(coffee_table.Coffee.status == TaskStatus.processing).order_by(
+    #         coffee_table.Coffee.create_time.asc(), coffee_table.Coffee.id.asc()).all():
+    #     if len(processing_records) == 1:
+    #         if processing_records[0].type == Constant.FormulaType.red:
+    #             white_record = db.query(coffee_table.Coffee).filter(coffee_table.Coffee.status == TaskStatus.waiting,
+    #                                                                 coffee_table.Coffee.type == Constant.FormulaType.white).order_by(
+    #                 coffee_table.Coffee.create_time.asc(), coffee_table.Coffee.id.asc()).first()
+    #             return coffee_schema.CoffeeRecord.from_orm(white_record)
+    #         else:
+    #             red_record = db.query(coffee_table.Coffee).filter(coffee_table.Coffee.status == TaskStatus.waiting,
+    #                                                               coffee_table.Coffee.type == Constant.FormulaType.red).order_by(
+    #                 coffee_table.Coffee.create_time.asc(), coffee_table.Coffee.id.asc()).first()
+    #             return coffee_schema.CoffeeRecord.from_orm(red_record)
+    # else:
+    #     if red_record := db.query(coffee_table.Coffee).filter(coffee_table.Coffee.status == TaskStatus.waiting,
+    #                                                           coffee_table.Coffee.type == Constant.FormulaType.red).order_by(
+    #             coffee_table.Coffee.create_time.asc(), coffee_table.Coffee.id.asc()).first():
+    #         return coffee_schema.CoffeeRecord.from_orm(red_record)
+    #     elif white_record := db.query(coffee_table.Coffee).filter(coffee_table.Coffee.status == TaskStatus.waiting,
+    #                                                               coffee_table.Coffee.type == Constant.FormulaType.white).order_by(
+    #             coffee_table.Coffee.create_time.asc(), coffee_table.Coffee.id.asc()).first():
+    #         return coffee_schema.CoffeeRecord.from_orm(white_record)
+
+
+def get_one_processing_record(db: Session):
+    if processing_records := db.query(coffee_table.Coffee).filter(coffee_table.Coffee.status.in_([TaskStatus.processing, TaskStatus.waiting])).order_by(
+            coffee_table.Coffee.create_time.asc(), coffee_table.Coffee.id.asc()).all():
+        return False
+    else:
+        return True
 
 
 def exist_next_record(db: Session):

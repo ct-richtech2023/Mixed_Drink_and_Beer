@@ -110,6 +110,6 @@ class Audio:
                 self.gtts_thread.proceed()
         else:
             audio_crud.add_speak(text, level)
-            # if self.gtts_thread is None or not self.gtts_thread.is_alive():
-            #     self.gtts_thread = PlayThread(gtts_out)
-            #     self.gtts_thread.start()
+            if self.gtts_thread is None or not self.gtts_thread.is_alive():
+                self.gtts_thread = PlayThread(gtts_out)
+                self.gtts_thread.start()

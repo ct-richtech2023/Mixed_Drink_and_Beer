@@ -31,3 +31,14 @@ class DB_Constant:
         for config in configs:
             return_data.append(config.name)
         return Literal[tuple(return_data)]
+
+    @classmethod
+    def support_formula_name_type(cls, in_use=None):
+        return_data = []
+        conditions = []
+        if in_use:
+            conditions.append(coffee_table.Formula.in_use == in_use)
+        formulas = db.query(coffee_table.Formula).filter(*conditions).all()
+        for formula in formulas:
+            return_data.append(formula.name)
+        return return_data

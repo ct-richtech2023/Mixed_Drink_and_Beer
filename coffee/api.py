@@ -34,7 +34,7 @@ db = next(get_db())
 
 
 @router.post("/make", description="control coffee machine to make drink")
-def make(formula: str, sweetness: int, ice: define.SUPPORT_ICE_TYPE,
+def make(formula: str, type: str, sweetness: int, ice: define.SUPPORT_ICE_TYPE,
          milk: define.SUPPORT_MILK_TYPE = define.MilkType.milk, cup=define.CupSize.medium_cup,
          task_uuid: UUID = None, receipt_number: str = '', create_time=None, coffee: Business = Depends(get_coffee_obj)):
     try:
@@ -45,6 +45,7 @@ def make(formula: str, sweetness: int, ice: define.SUPPORT_ICE_TYPE,
             'task_uuid': task_uuid,
             'receipt_number': receipt_number,
             'formula': formula,
+            'type': type,
             'cup': cup,
             'sweetness': sweetness,
             'ice': ice,

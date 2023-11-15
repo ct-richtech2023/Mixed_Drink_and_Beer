@@ -114,6 +114,9 @@ class Adam:
         self.right_is_use = False
         self.waiting_Over_Gold = False
         self.waiting_Rowdy_IPA = False
+
+        self.is_coffee_finished = False
+
         AudioInterface.gtts('/richtech/resource/audio/voices/ready.mp3')
 
     def init_record(self):
@@ -141,7 +144,7 @@ class Adam:
         左手取热咖杯子，一旦取杯子就认为开始做咖啡了
         """
         logger.info('take_hot_cup')
-        pose_speed = 600
+        pose_speed = 200
 
         self.change_adam_status(AdamTaskStatus.making)
         cup_config = self.get_cup_config(define.CupName.hot_cup)
@@ -170,9 +173,8 @@ class Adam:
             self.goto_temp_point(which, z=up_take_pose.z + 20, speed=pose_speed, wait=False)  # 向上拔杯子
             CoffeeInterface.post_use(define.CupName.hot_cup, 1)  # 热咖杯子数量-1
             self.goto_tool_position(which, yaw=-180, speed=1500, wait=True)  # 再次翻转夹爪
-            # self.goto_gripper_position(which, 400, wait=True)  # 闭合夹爪
-            self.goto_temp_point(which, x=up_take_pose.x + 5, y=up_take_pose.y - 165, speed=pose_speed, wait=False)
-            self.goto_temp_point(which, z=up_take_pose.z - 100, speed=pose_speed, wait=True)
+            # self.goto_temp_point(which, x=up_take_pose.x + 5, y=up_take_pose.y - 165, speed=pose_speed, wait=False)
+            # self.goto_temp_point(which, z=up_take_pose.z - 100, speed=pose_speed, wait=True)
             # 恢复灵敏度，与上方设置灵敏度一起注释或一起放开
             self.env.one_arm(which).set_collision_sensitivity(self.env.adam_config.same_config.collision_sensitivity)
             self.safe_set_state(Arm.left, 0)
@@ -180,13 +182,14 @@ class Adam:
             #  todo 运动到arduino检测位置
 
         take_cup()
-        try:
-            while not self.arduino.check_cup_token(self.current_cup_name, 400):
-                cup_config.clamp -= 3
-                take_cup()
-            # self.goto_initial_position_direction(which, 0, wait=True, speed=pose_speed)  # 运动回零点
-        except Exception as e:
-            self.stop()
+        self.goto_initial_position_direction(which, 0, wait=True, speed=pose_speed)
+        # try:
+        #     while not self.arduino.check_cup_token(self.current_cup_name, 400):
+        #         cup_config.clamp -= 3
+        #         take_cup()
+        #     # self.goto_initial_position_direction(which, 0, wait=True, speed=pose_speed)  # 运动回零点
+        # except Exception as e:
+        #     self.stop()
 
     def take_daily_coffee(self):
 
@@ -774,6 +777,49 @@ class Adam:
         # self.goto_gripper_position(which, 850, wait=True)
         # self.goto_temp_point(which, x=put_cup_pose.x - 122, z=put_cup_pose.z - 128, wait=False, speed=TCP_speed)
         # self.goto_initial_position_direction(which, 0, wait=True, speed=TCP_speed) 
+
+    def make_red_wine(self, formula, sweetness, milk, ice, receipt_number):
+        start_time = int(time.time())
+        AudioInterface.gtts("Got it, I'm making your drink now!")
+        logger.debug('start in make_red_wine')
+        # composition = self.get_composition_by_option(formula, define.CupSize.medium_cup, sweetness, milk)
+        # logger.info(f"into make_red_wine  :{composition}")
+
+        self.right_record.clear()
+        try:
+            self.right_record.proceed()  # 记录关节位置线程开启
+            self.take_cold_cup()
+            self.put_cold_cup()
+            self.right_record.pause()
+        except StopError as stop_err:
+            raise stop_err
+        except Exception as e:
+            self.stop(e)
+        finally:
+            get_make_time = int(time.time()) - start_time
+            logger.info(f"{formula} making use time is : {get_make_time}")
+
+    def make_white_wine(self, formula, sweetness, milk, ice, receipt_number):
+        start_time = int(time.time())
+        AudioInterface.gtts("Got it, I'm making your drink now!")
+        logger.debug('start in make_white_wine')
+        # composition = self.get_composition_by_option(formula, define.CupSize.medium_cup, sweetness, milk)
+        # logger.info(f"into make_white_wine  :{composition}")
+
+        self.left_record.clear()
+
+        try:
+            self.left_record.proceed()  # 记录关节位置线程开启
+            self.take_hot_cup()
+            self.put_hot_cup()
+            self.left_record.pause()
+        except StopError as stop_err:
+            raise stop_err
+        except Exception as e:
+            self.stop(e)
+        finally:
+            get_make_time = int(time.time()) - start_time
+            logger.info(f"{formula} making use time is : {get_make_time}")
 
     # All of the IPO event functions
     def make_cold_drink(self, formula, sweetness, milk, ice, receipt_number):
@@ -2291,7 +2337,7 @@ class Adam:
         if cup == 'cold_cup':
             self.goto_temp_point(which, z=put_pose.z - 135, wait=True, speed=40)  # 运动到放杯位置 z-=33
         else:
-            self.goto_temp_point(which, z=put_pose.z - 125, wait=True, speed=40)
+            self.goto_temp_point(which, z=put_pose.z - 100, wait=True, speed=40)
         self.goto_gripper_position(which, self.env.gripper_open_pos, wait=True)  # 张开夹爪
         self.goto_temp_point(which, x=put_pose.x - 400, wait=False, speed=400)  # 放完向后退
         self.goto_point(which, self.initial_position(which), wait=False, speed=400)  # 回零点
@@ -2302,7 +2348,7 @@ class Adam:
         """
         右手取冷咖杯子，一旦取杯子就认为开始做咖啡了
         """
-        pose_speed = 1000
+        pose_speed = 200
         logger.info('take_cold_cup')
 
         self.change_adam_status(AdamTaskStatus.making)
@@ -2545,9 +2591,9 @@ class Adam:
         temp_pose = deepcopy(put_pose)
         temp_pose.x -= 400
         self.goto_point(which, temp_pose, speed=pose_speed, wait=True)  # 放杯位置后上方
-        self.goto_gripper_position(which, 270, wait=True)
+        # self.goto_gripper_position(which, 270, wait=True)
         self.goto_point(which, put_pose, wait=True, speed=pose_speed)  # 运动到放杯位置上方
-        self.goto_temp_point(which, z=put_pose.z - 144, wait=True, speed=40)  # 运动到放杯位置
+        self.goto_temp_point(which, z=put_pose.z - 50, wait=True, speed=40)  # 运动到放杯位置
         self.goto_gripper_position(which, self.env.gripper_open_pos, wait=False)  # 张开夹爪
         self.goto_temp_point(which, x=put_pose.x - 400, wait=False, speed=pose_speed)  # 放完向后退
         self.goto_point(which, self.initial_position(which), wait=True, speed=pose_speed)  # 回零点
@@ -3632,10 +3678,7 @@ class Adam:
         self.env.adam.clean_error()
         self.arduino.arduino.send_one_msg('0')  # 关闭所有arduino
         adam_crud.init_tap()
-        # for i in range(16):
-        #     logger.debug('close gpio {}'.format(i))
-        #     self.left.set_cgpio_digital(i, 0)
-        #     self.right.set_cgpio_digital(i, 0)
+
         self.env.adam.set_state(dict(state=4), dict(state=4))
         self.change_adam_status(AdamTaskStatus.stopped)
         # 停止播放音乐
@@ -4910,6 +4953,156 @@ class Adam:
         if self.task_status != AdamTaskStatus.making:
             self.task_status = AdamTaskStatus.idle
         return self.task_status
+
+    def making_to_dance1(self):
+        """告白舞"""
+
+        self.task_status = AdamTaskStatus.dancing
+
+        logger.info('making_to_dance1!!!')
+
+        self.env.adam.set_tcp_offset(dict(offset=[0] * 6), dict(offset=[0] * 6))
+        self.env.adam.set_state(dict(state=0), dict(state=0))
+        default_speed = 600
+        start_time = time.perf_counter()
+
+        # 回到作揖状态
+        left_angles, right_angles = self.get_initial_position()
+        logger.info('left_angles={}, right_angles={}'.format(left_angles, right_angles))
+        self.env.adam.set_servo_angle(dict(angle=left_angles, speed=20, wait=True),
+                                      dict(angle=right_angles, speed=20, wait=True))
+        AudioInterface.music('Oops.mp3')
+
+        def get_position_value(position, **kwargs):
+            v = ['x', 'y', 'z', 'roll', 'pitch', 'yaw']
+            value = dict(zip(v, position))
+            kwargs.setdefault('speed', 1000)
+            kwargs.setdefault('mvacc', 1000)
+            return dict(value, **kwargs)
+
+        def set_adam_position(point_name, left_speed=None, right_speed=None, wait=False, mvacc=None, radius=10):
+            left_speed = left_speed or default_speed
+            right_speed = right_speed or default_speed
+            left = get_position_value(data[Arm.left][point_name]['position'],
+                                      wait=wait, radius=radius, speed=left_speed, mvacc=mvacc)
+            right = get_position_value(data[Arm.right][point_name]['position'],
+                                       wait=wait, radius=radius, speed=right_speed, mvacc=mvacc)
+            self.env.adam.set_position(left, right)
+
+        def get_next_point_speed(point_name):
+            left_p, right_p = self.env.adam.position
+            [x1, y1, z1] = left_p[:3]
+            [x2, y2, z2] = data[Arm.left][point_name]['position'][:3]
+            left_d = ((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2) ** 0.5
+            [x1, y1, z1] = right_p[:3]
+            [x2, y2, z2] = data[Arm.right][point_name]['position'][:3]
+            right_d = ((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2) ** 0.5
+            if left_d > right_d:
+                s = int(left_d / right_d * default_speed)
+                return default_speed, s
+            else:
+                s = int(left_d / right_d * default_speed)
+                return s, default_speed
+
+        data = utils.read_resource_json('/adam/data/dance1.json')
+        for i in range(1):
+            # 回到舞蹈初始点
+            set_adam_position('zero', wait=True)
+            # 同时运动到挥手位置
+            left_speed, right_speed = get_next_point_speed('huang-you')
+            set_adam_position('huang-you', left_speed=left_speed, right_speed=right_speed)
+            # 左右挥手
+            start_hui_time = time.perf_counter()
+            for i in range(4):
+                set_adam_position('huang-zuo', left_speed=1000, right_speed=1000, mvacc=1000)
+                set_adam_position('huang-you', left_speed=1000, right_speed=1000, mvacc=1000)
+            logger.info('hui-show used time={}'.format(time.perf_counter() - start_hui_time))
+
+            if self.is_coffee_finished == True:
+                break
+            # zero
+            set_adam_position('zero', wait=True)
+            # 比爱心
+            set_adam_position('ai-zhong', left_speed=400, right_speed=400)
+            set_adam_position('ai', left_speed=400, right_speed=400)
+            # 爱心左右移动
+            for i in range(4):
+                set_adam_position('ai-left')
+                set_adam_position('ai-right')
+            # 回到标准爱心位置
+            set_adam_position('ai', wait=True)
+
+            logger.info('dance use_time={}'.format(time.perf_counter() - start_time))
+
+        # AudioInterface.stop()
+        self.env.init_adam()
+
+    def ring_bell_prepare(self):
+        """敲钟"""
+        self.task_status = AdamTaskStatus.prepare
+
+        self.env.adam.set_servo_angle(
+            right={'angle': [-145, 50, -80, 35, 15, 30], 'speed': 25, 'wait': True}
+        )
+
+    def ring_bell_start(self):
+        """敲钟"""
+        self.task_status = AdamTaskStatus.celebrating
+
+        self.env.adam.set_servo_angle(
+            right={'angle': [-155, 93, -145, 35, 15, 35], 'speed': 100, 'wait': True}
+        )
+
+        self.env.adam.set_servo_angle(
+            left={'angle': [29, 100, -150, -176, 36, 88], 'speed': 40, 'wait': False}
+        )
+        for i in range(10):
+            # self.left.set_position(x=245, y=437, z=908, roll=-22, pitch=-5, yaw=1, speed=200, wait=False)
+            # self.left.set_position(x=278, y=242, z=908, roll=15, pitch=1, yaw=-1, speed=200, wait=False)
+
+            self.env.adam.set_servo_angle(
+                left={'angle': [29, 100, -150, -176, 36, 88], 'speed': 25, 'wait': False}
+            )
+            self.env.adam.set_servo_angle(
+                left={'angle': [29, 100, -124, -176, 36, 88], 'speed': 25, 'wait': False}
+            )
+
+            # self.left.set_position(x=500, y=180, z=1100, roll=-33, pitch=-5, yaw=0.5, speed=100, wait=False)
+            # self.left.set_position(x=500, y=-140, z=1050, roll=32, pitch=5, yaw=-4, speed=100, wait=False)
+
+    def parallel_arms(self):
+        """初始位置"""
+
+        left_Pos1 = {'x': 385, 'y': -180, 'z': 590, 'roll': 90, 'pitch': 90, 'yaw': 0}
+        right_Pos1 = {'x': 506, 'y': 133, 'z': 350, 'roll': -90, 'pitch': 90, 'yaw': 0}
+        speed = 50
+        self.env.adam.set_position(
+            left={**left_Pos1, 'speed': speed, 'wait': True},
+            right={**right_Pos1, 'speed': speed, 'wait': True},
+        )
+
+    def back_standby_pose(self):
+        # logger.debug('adam is dancing now, stop and goto zero')
+        self.env.adam.set_state(dict(state=4), dict(state=4))
+        self.task_status = AdamTaskStatus.making  # temp
+        # 停止播放音乐
+        AudioInterface.stop()
+        logger.warning("adam stop and wait 2 seconds")
+        time.sleep(2)
+        self.left.motion_enable()
+        self.left.clean_error()
+        self.left.clean_warn()
+        self.left.set_state(0)
+        self.right.motion_enable()
+        self.right.clean_error()
+        self.right.clean_warn()
+        self.right.set_state(0)
+
+        self.goto_standby_pose()
+        logger.warning("adam stop and goto zero finish")
+        print(f"self.task_status: {self.task_status}")
+        self.task_status = AdamTaskStatus.idle
+        return {'msg': 'ok', 'status': self.task_status}
 
 
 class QueeyCoffeeThread(threading.Thread):

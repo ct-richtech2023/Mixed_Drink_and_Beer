@@ -36,7 +36,7 @@ class TaskThread(threading.Thread):
                 wait_time = 0
                 while not sended:
                     try:
-                        result = CoffeeInterface.make(task_record.formula, task_record.cup, task_record.sweetness, task_record.ice, task_record.milk,
+                        result = CoffeeInterface.make(task_record.formula,task_record.type, task_record.cup, task_record.sweetness, task_record.ice, task_record.milk,
                                                       task_record.task_uuid, task_record.receipt_number, task_record.create_time)
                         if result:
                             task_record.status = TaskStatus.waiting

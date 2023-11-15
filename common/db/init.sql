@@ -44,7 +44,6 @@ INSERT INTO "machine_config"("name", "machine", "num", "gpio", "arduino_write", 
 INSERT INTO "machine_config"("name", "machine", "num", "gpio", "arduino_write", "arduino_read", "speed", "delay_time", "type") VALUES ('hot_cup', 'cup', 1, NULL, NULL, '7', NULL, NULL, NULL);
 INSERT INTO "machine_config"("name", "machine", "num", "gpio", "arduino_write", "arduino_read", "speed", "delay_time", "type") VALUES ('sugar_power', 'power_box', 0, NULL, NULL, NULL, NULL, NULL, NULL);
 
-
 -- table formula --
 INSERT INTO "formula"("name", "cup", "with_ice", "type", "in_use") VALUES ('Latte', 'Medium Cup', '0', 'hot', 1);
 INSERT INTO "formula"("name", "cup", "with_ice", "type", "in_use") VALUES ('Iced Latte', 'Medium Cup', '1', 'cold', 1);
@@ -218,3 +217,22 @@ INSERT INTO "tap_status"("material_name", "status") VALUES ('chocolate_syrup', 0
 INSERT INTO "tap_status"("material_name", "status") VALUES ('green_tea_syrup', 0);
 INSERT INTO "tap_status"("material_name", "status") VALUES ('cold_coffee', 0);
 INSERT INTO "tap_status"("material_name", "status") VALUES ('vanilla_syrup', 0);
+
+
+-- ct 11-15
+-- material_current
+INSERT INTO "material_current"("name", "display",  "capacity", "alarm", "left", "count", "unit", "batch", "type", "in_use", "machine", "extra") VALUES ('red_cup', 'Red Wine Cup', 500, 2, '500', 0, 'pcs', 1, 'cup', 1, 'cup', NULL);
+INSERT INTO "material_current"("name", "display",  "capacity", "alarm", "left", "count", "unit", "batch", "type", "in_use", "machine", "extra") VALUES ('white_cup', 'White Wine Cup', 500, 2, '500', 0, 'pcs', 1, 'cup', 1, 'cup', NULL);
+INSERT INTO "material_current"("name", "display",  "capacity", "alarm", "left", "count", "unit", "batch", "type", "in_use", "machine", "extra") VALUES ('La Crema Pinot Noir Monterey', '', 9999, 0, '9999', 0, 'ml', 0, 'endless', 1, '', NULL);
+INSERT INTO "material_current"("name", "display",  "capacity", "alarm", "left", "count", "unit", "batch", "type", "in_use", "machine", "extra") VALUES ('Kim Crawford Sauvignon Blanc', '', 9999, 0, '9999', 0, 'ml', 0, 'endless', 1, '', NULL);
+-- machine_config
+INSERT INTO "machine_config"("name", "machine", "num", "gpio", "arduino_write", "arduino_read", "speed", "delay_time", "type") VALUES ('red_cup', 'cup', 0, NULL, NULL, '7', NULL, NULL, NULL);
+INSERT INTO "machine_config"("name", "machine", "num", "gpio", "arduino_write", "arduino_read", "speed", "delay_time", "type") VALUES ('white_cup', 'cup', 1, NULL, NULL, '7', NULL, NULL, NULL);
+-- formula
+INSERT INTO "formula"("name", "cup", "with_ice", "type", "in_use") VALUES ('La Crema Pinot Noir Monterey', 'Medium Cup', '0', 'red', 1);
+INSERT INTO "formula"("name", "cup", "with_ice", "type", "in_use") VALUES ('Kim Crawford Sauvignon Blanc', 'Medium Cup', '0', 'white', 1);
+-- composition
+INSERT INTO "composition"("formula", "cup", "material", "count", "extra") VALUES ('La Crema Pinot Noir Monterey', 'Medium Cup', 'La Crema Pinot Noir Monterey', 10, '');
+INSERT INTO "composition"("formula", "cup", "material", "count", "extra") VALUES ('La Crema Pinot Noir Monterey', 'Medium Cup', 'red_cup', 1, '');
+INSERT INTO "composition"("formula", "cup", "material", "count", "extra") VALUES ('Kim Crawford Sauvignon Blanc', 'Medium Cup', 'Kim Crawford Sauvignon Blanc', 12, '');
+INSERT INTO "composition"("formula", "cup", "material", "count", "extra") VALUES ('Kim Crawford Sauvignon Blanc', 'Medium Cup', 'white_cup', 1, '');

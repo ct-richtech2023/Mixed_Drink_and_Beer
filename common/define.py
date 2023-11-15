@@ -114,6 +114,8 @@ class CupName:
     cold_cup = 'cold_cup'
     left_cup = 'left_cup'
     right_cup = 'right_cup'
+    red_cup = 'red_cup'
+    white_cup = 'red_cup'
 
 
 class MilkType:
@@ -174,6 +176,8 @@ class AdamTaskStatus:
     stopped = 'stopped'
     rolling = 'rolling'
     dead = 'dead'
+    prepare = 'prepare'
+    celebrating = 'celebrating'
 
 
 class PrePosition:
@@ -200,6 +204,8 @@ class Constant:
     class FormulaType:
         hot = 'hot'
         cold = 'cold'
+        red = 'red'
+        white = 'white'
 
     class MachineType:
         coffee_machine = 'coffee_machine'

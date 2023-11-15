@@ -41,9 +41,7 @@ async def new_order(order: center_schemas.PadOrder):
     try:
         support_formula_name = DB_Constant.support_formula_name()
         for drink in order.drinks:
-            assert drink.name in support_formula_name, 'drink [{}] not support, permitted {}'.format(drink.name,
-                                                                                                     support_formula_name)
-
+            assert drink.name in support_formula_name, 'drink [{}] not support, permitted {}'.format(drink.name, support_formula_name)
         center_crud.create_paid_order_from_pad(db, order)
         return center_crud.get_tasks_by_order_number(db, order.order_number)
     except Exception as e:

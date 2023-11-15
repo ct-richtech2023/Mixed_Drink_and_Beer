@@ -36,6 +36,41 @@ SUPPORT_ARDUINO_MATERIAL = Literal['sea_salt_foam', 'coconut_water', 'coconut_mi
 TAP_DICT = {'sea_salt_foam': 0}
 
 
+@router.post("/making_to_dance1", summary='let adam dance in music')
+def making_to_dance1(adam: Adam = Depends(get_adam_obj)):
+    logger.info('adam dance')
+    adam.making_to_dance1()
+    return 'ok'
+
+
+@router.post("/ring_bell_prepare", summary='let adam dance in music')
+def ring_bell_prepare(adam: Adam = Depends(get_adam_obj)):
+    logger.info('adam dance')
+    adam.ring_bell_prepare()
+    return 'ok'
+
+
+@router.post("/ring_bell_start", summary='let adam dance in music')
+def ring_bell_start(adam: Adam = Depends(get_adam_obj)):
+    logger.info('adam dance')
+    adam.ring_bell_start()
+    return 'ok'
+
+
+@router.post("/back_standby_pose", summary='let adam back standby pose')
+def back_standby_pose(adam: Adam = Depends(get_adam_obj)):
+    logger.info('back standby pose')
+    adam.back_standby_pose()
+    return 'ok'
+
+
+@router.post("/parallel_arms", summary='let adam dance in music')
+def parallel_arms(adam: Adam = Depends(get_adam_obj)):
+    logger.info('adam dance')
+    adam.parallel_arms()
+    return 'ok'
+
+
 @router.post("/zero", summary='adam goto zero position')
 def zero(adam: Adam = Depends(get_adam_obj)):
     logger.info('goto zero position')
@@ -453,6 +488,28 @@ def take_wine(formula: define.SUPPORT_FORMULA, adam: Adam = Depends(get_adam_obj
         return JSONResponse(status_code=510, content={'error': repr(e)})
 
 
+@router.post("/make_red_wine", summary='make_red_wine')
+def make_red_wine(formula: str, sweetness: int, ice: define.SUPPORT_ICE_TYPE, milk: define.SUPPORT_MILK_TYPE = define.MilkType.milk,
+                  receipt_number: str = '', adam: Adam = Depends(get_adam_obj)):
+    logger.info('make_red_wine')
+    try:
+        adam.make_red_wine(formula, sweetness, milk, ice, receipt_number)
+        return 'ok'
+    except MoveError as e:
+        return JSONResponse(status_code=510, content={'error': repr(e)})
+
+
+@router.post("/make_white_wine", summary='make_white_wine')
+def make_white_wine(formula: str, sweetness: int, ice: define.SUPPORT_ICE_TYPE, milk: define.SUPPORT_MILK_TYPE = define.MilkType.milk,
+                    receipt_number: str = '', adam: Adam = Depends(get_adam_obj)):
+    logger.info('make_white_wine')
+    try:
+        adam.make_white_wine(formula, sweetness, milk, ice, receipt_number)
+        return 'ok'
+    except MoveError as e:
+        return JSONResponse(status_code=510, content={'error': repr(e)})
+
+
 @router.post("/make_cold_drink", summary='make_cold_drink')
 def make_cold_drink(formula: SUPPORT_FORMULA, sweetness: int,
                     ice: define.SUPPORT_ICE_TYPE, milk: define.SUPPORT_MILK_TYPE = define.MilkType.milk,
@@ -471,7 +528,7 @@ def make_hot_drink_event(formula: SUPPORT_FORMULA, sweetness: int,
                          receipt_number: str = '', adam: Adam = Depends(get_adam_obj)):
     logger.info('make_hot_drink_event')
     try:
-        adam.make_hot_drink_event(formula, sweetness, milk, ice, receipt_number)
+        # adam.make_hot_drink_event(formula, sweetness, milk, ice, receipt_number)
         return 'ok'
     except Exception as e:
         return JSONResponse(status_code=510, content={'error': repr(e)})
@@ -483,7 +540,7 @@ def make_hot_drink(formula: SUPPORT_FORMULA, sweetness: int,
                    receipt_number: str = '', adam: Adam = Depends(get_adam_obj)):
     logger.info('make_hot_drink')
     try:
-        adam.make_hot_drink(formula, sweetness, milk, ice, receipt_number)
+        # adam.make_hot_drink(formula, sweetness, milk, ice, receipt_number)
         return 'ok'
     except Exception as e:
         return JSONResponse(status_code=510, content={'error': repr(e)})

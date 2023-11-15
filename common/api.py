@@ -128,8 +128,8 @@ class CoffeeInterface:
     base_url = module_base_url('coffee')
 
     @classmethod
-    def make(cls, formula, cup, sweetness, ice, milk, task_uuid=None, receipt_number='', create_time=None):
-        params = {'formula': formula, 'cup': cup, 'sweetness': sweetness, 'task_uuid': task_uuid,
+    def make(cls, formula, type, cup, sweetness, ice, milk, task_uuid=None, receipt_number='', create_time=None):
+        params = {'formula': formula, 'type': type, 'cup': cup, 'sweetness': sweetness, 'task_uuid': task_uuid,
                   'ice': ice, 'milk': milk, 'receipt_number': receipt_number}
         if create_time:
             params['create_time'] = create_time
@@ -315,6 +315,26 @@ class AdamInterface:
     def make_hot_drink(cls, formula, sweetness, ice, milk, receipt_number):
         params = {'formula': formula, 'sweetness': sweetness, 'ice': ice, 'milk': milk, 'receipt_number': receipt_number}
         url = "{}/adam/make_hot_drink".format(cls.base_url)
+        res = requests.post(url, params=params)
+        logger.info('url={}, result={}'.format(url, res.json()))
+        if res.status_code and res.status_code != 200:
+            msg = res.content if res.content else ''
+            raise AdamError(msg)
+
+    @classmethod
+    def make_red_wine(cls, formula, sweetness, ice, milk, receipt_number):
+        params = {'formula': formula, 'sweetness': sweetness, 'ice': ice, 'milk': milk, 'receipt_number': receipt_number}
+        url = "{}/adam/make_red_wine".format(cls.base_url)
+        res = requests.post(url, params=params)
+        logger.info('url={}, result={}'.format(url, res.json()))
+        if res.status_code and res.status_code != 200:
+            msg = res.content if res.content else ''
+            raise AdamError(msg)
+
+    @classmethod
+    def make_white_wine(cls, formula, sweetness, ice, milk, receipt_number):
+        params = {'formula': formula, 'sweetness': sweetness, 'ice': ice, 'milk': milk, 'receipt_number': receipt_number}
+        url = "{}/adam/make_white_wine".format(cls.base_url)
         res = requests.post(url, params=params)
         logger.info('url={}, result={}'.format(url, res.json()))
         if res.status_code and res.status_code != 200:
